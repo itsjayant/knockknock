@@ -84,6 +84,49 @@ export default function QrCodesList({ initialQrCodes, onNewQrCode }: Props) {
     setTimeout(() => setCopiedId(null), 2000);
   }
 
+  function handleDownloadQR(qrId: string, label: string) {
+    const qrImage = qrImages[qrId];
+    if (!qrImage) return;
+
+    // Create a canvas to draw the QR code with label
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Create an image from the QR data URL
+    const img = new window.Image();
+    img.src = qrImage;
+
+    img.onload = () => {
+      const padding = 20;
+      const labelHeight = 50;
+      const imgSize = img.width;
+
+      // Set canvas dimensions
+      canvas.width = imgSize + padding * 2;
+      canvas.height = imgSize + padding * 2 + labelHeight;
+
+      // White background
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw QR image
+      ctx.drawImage(img, padding, padding);
+
+      // Draw label
+      ctx.fillStyle = "#18181b";
+      ctx.font = "bold 16px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(label, canvas.width / 2, imgSize + padding * 2 + 25);
+
+      // Download
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/png");
+      link.download = `qr-${label.replace(/\s+/g, "-").toLowerCase()}.png`;
+      link.click();
+    };
+  }
+
   return (
     <div className="space-y-6">
       {error && (
@@ -108,8 +151,8 @@ export default function QrCodesList({ initialQrCodes, onNewQrCode }: Props) {
                 <h3 className="font-semibold text-zinc-900 truncate">{qr.label}</h3>
                 <span
                   className={`inline-block rounded-full px-2 py-1 text-xs font-medium flex-shrink-0 ${qr.isActive
-                      ? "bg-green-50 text-green-700"
-                      : "bg-zinc-100 text-zinc-500"
+                    ? "bg-green-50 text-green-700"
+                    : "bg-zinc-100 text-zinc-500"
                     }`}
                 >
                   {qr.isActive ? "Active" : "Inactive"}
@@ -146,6 +189,14 @@ export default function QrCodesList({ initialQrCodes, onNewQrCode }: Props) {
                     }`}
                 >
                   {copiedId === qr.id ? "✓ Copied!" : "Copy Link"}
+                </button>
+                <button
+                  onClick={() => handleDownloadQR(qr.id, qr.label)}
+                  disabled={!qrImages[qr.id]}
+                  className="flex-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-600 transition hover:bg-blue-100 disabled:opacity-50"
+                  title="Download QR code as PNG"
+                >
+                  ⬇ Download
                 </button>
                 <button
                   onClick={() => handleDelete(qr.id)}
