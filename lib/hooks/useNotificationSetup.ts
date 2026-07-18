@@ -10,10 +10,26 @@ export function useNotificationSetup() {
     const [loading, setLoading] = useState(false);
     const [registered, setRegistered] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [isSafari, setIsSafari] = useState(false);
+    const [notificationsSupported, setNotificationsSupported] = useState(true);
 
     useEffect(() => {
         // Mark as mounted to prevent hydration mismatch
         setMounted(true);
+
+        // Detect Safari browser
+        const ua = navigator.userAgent;
+        const isSafariUA = /Safari/.test(ua) && !/Chrome/.test(ua);
+        const isIOS = /iPad|iPhone|iPod/.test(ua);
+        setIsSafari(isSafariUA);
+
+        // Check if notifications are supported
+        const notificationsAPI = "Notification" in window;
+        const serviceWorkerAPI = "serviceWorker" in navigator;
+        const pushAPI = "pushManager" in ServiceWorkerRegistration.prototype || false;
+        const supported = notificationsAPI && serviceWorkerAPI && pushAPI;
+
+        setNotificationsSupported(supported);
 
         // Check current permission status
         if ("Notification" in window) {
@@ -194,6 +210,8 @@ export function useNotificationSetup() {
         registered,
         requestNotificationPermission,
         mounted,
+        isSafari,
+        notificationsSupported,
     };
 }
 
