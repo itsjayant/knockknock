@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { auth } from "@/lib/firebase";
 import { collection, query, where, orderBy, onSnapshot, Unsubscribe } from "firebase/firestore";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import TodayIcon from "@mui/icons-material/Today";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 type Visit = {
     id: string;
@@ -31,73 +35,79 @@ export default function DashboardStats() {
 
     useEffect(() => {
         const user = auth.currentUser;
-        if (!user) return;
+        if (!user) {
+            console.log("No user found for stats");
+            return;
+        }
 
-        let unsubscribe: Unsubscribe;
+        let unsubscribe: Unsubscribe | undefined;
 
-        const setupListener = async () => {
-            try {
-                const q = query(
-                    collection(db, "visits"),
-                    where("ownerId", "==", user.uid),
-                    orderBy("timestamp", "desc")
-                );
+        try {
+            const q = query(
+                collection(db, "visits"),
+                where("ownerId", "==", user.uid),
+                orderBy("timestamp", "desc")
+            );
 
-                unsubscribe = onSnapshot(
-                    q,
-                    (snapshot) => {
-                        const now = new Date();
-                        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                        const sevenDaysAgo = new Date(today);
-                        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            unsubscribe = onSnapshot(
+                q,
+                (snapshot) => {
+                    const now = new Date();
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const sevenDaysAgo = new Date(today);
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-                        let todayCount = 0;
-                        let weekCount = 0;
-                        const locationCounts = new Map<string, number>();
+                    let todayCount = 0;
+                    let weekCount = 0;
+                    const locationCounts = new Map<string, number>();
 
-                        snapshot.forEach((doc) => {
-                            const data = doc.data();
-                            const timestamp = data.timestamp?.toDate?.();
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        const timestamp = data.timestamp?.toDate?.();
 
-                            if (timestamp) {
-                                if (timestamp >= today) todayCount++;
-                                if (timestamp >= sevenDaysAgo) weekCount++;
+                        if (timestamp) {
+                            if (timestamp >= today) todayCount++;
+                            if (timestamp >= sevenDaysAgo) weekCount++;
 
-                                const label = data.qrLabel || "Unknown";
-                                locationCounts.set(label, (locationCounts.get(label) || 0) + 1);
-                            }
-                        });
+                            const label = data.qrLabel || "Unknown";
+                            locationCounts.set(label, (locationCounts.get(label) || 0) + 1);
+                        }
+                    });
 
-                        // Find top location
-                        let topLocation = null;
-                        let maxCount = 0;
-                        locationCounts.forEach((count, label) => {
-                            if (count > maxCount) {
-                                maxCount = count;
-                                topLocation = { label, count };
-                            }
-                        });
+                    // Find top location
+                    let topLocation = null;
+                    let maxCount = 0;
+                    locationCounts.forEach((count, label) => {
+                        if (count > maxCount) {
+                            maxCount = count;
+                            topLocation = { label, count };
+                        }
+                    });
 
-                        setStats({
-                            totalRings: snapshot.size,
-                            todayRings: todayCount,
-                            thisWeekRings: weekCount,
-                            topLocation,
-                        });
-                        setLoading(false);
-                    },
-                    (error) => {
-                        console.error("Error fetching stats:", error);
-                        setLoading(false);
+                    setStats({
+                        totalRings: snapshot.size,
+                        todayRings: todayCount,
+                        thisWeekRings: weekCount,
+                        topLocation,
+                    });
+                    setLoading(false);
+                    console.log("📊 Loaded stats:", snapshot.size, "total rings");
+                },
+                (error: any) => {
+                    console.error("❌ Error fetching stats:", error?.code, error?.message);
+                    if (error?.code === "permission-denied") {
+                        console.error("📋 Check Firestore security rules and composite indexes");
                     }
-                );
-            } catch (error) {
-                console.error("Error setting up stats listener:", error);
-                setLoading(false);
-            }
-        };
-
-        setupListener();
+                    if (error?.code === "failed-precondition") {
+                        console.error("📋 Composite index required. Check Firebase Console");
+                    }
+                    setLoading(false);
+                }
+            );
+        } catch (error: any) {
+            console.error("❌ Error setting up stats listener:", error?.message);
+            setLoading(false);
+        }
 
         return () => {
             if (unsubscribe) {
@@ -108,13 +118,13 @@ export default function DashboardStats() {
 
     if (loading) {
         return (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 {[...Array(4)].map((_, i) => (
                     <div
                         key={i}
-                        className="rounded-lg border border-zinc-200 bg-zinc-100 px-4 py-6 animate-pulse"
+                        className="rounded-lg border border-slate-200 bg-slate-100 px-4 py-6 animate-pulse"
                     >
-                        <p className="text-sm text-zinc-500">Loading...</p>
+                        <p className="text-sm text-slate-500">Loading...</p>
                     </div>
                 ))}
             </div>
@@ -122,54 +132,59 @@ export default function DashboardStats() {
     }
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {/* Total Rings */}
-            <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between">
+            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all">
+                <div className="flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-medium text-zinc-600">Total Rings</p>
-                        <p className="mt-2 text-3xl font-bold text-zinc-900">{stats.totalRings}</p>
+                        <p className="text-xs font-semibold text-slate-500 uppercase">Total Rings</p>
+                        <p className="mt-2 text-4xl font-bold text-slate-900">{stats.totalRings}</p>
                     </div>
-                    <div className="text-3xl">🔔</div>
+                    <NotificationsIcon className="!text-3xl text-blue-600" />
                 </div>
             </div>
 
             {/* Today Rings */}
-            <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between">
+            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all">
+                <div className="flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-medium text-zinc-600">Today</p>
-                        <p className="mt-2 text-3xl font-bold text-zinc-900">{stats.todayRings}</p>
+                        <p className="text-xs font-semibold text-slate-500 uppercase">Today</p>
+                        <p className="mt-2 text-4xl font-bold text-slate-900">{stats.todayRings}</p>
                     </div>
-                    <div className="text-3xl">📅</div>
+                    <TodayIcon className="!text-3xl text-blue-600" />
                 </div>
             </div>
 
             {/* This Week */}
-            <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between">
+            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all">
+                <div className="flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-medium text-zinc-600">This Week</p>
-                        <p className="mt-2 text-3xl font-bold text-zinc-900">{stats.thisWeekRings}</p>
+                        <p className="text-xs font-semibold text-slate-500 uppercase">This Week</p>
+                        <p className="mt-2 text-4xl font-bold text-slate-900">{stats.thisWeekRings}</p>
                     </div>
-                    <div className="text-3xl">📊</div>
+                    <BarChartIcon className="!text-3xl text-blue-600" />
                 </div>
             </div>
 
             {/* Top Location */}
-            <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
-                <div>
-                    <p className="text-xs font-medium text-zinc-600">Top Location</p>
-                    {stats.topLocation ? (
-                        <>
-                            <p className="mt-2 text-xl font-bold text-zinc-900">{stats.topLocation.label}</p>
-                            <p className="text-xs text-zinc-500 mt-1">
-                                {stats.topLocation.count} rings
-                            </p>
-                        </>
-                    ) : (
-                        <p className="mt-2 text-sm text-zinc-500">No data yet</p>
-                    )}
+            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all">
+                <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                        <p className="text-xs font-semibold text-slate-500 uppercase">Top Location</p>
+                        {stats.topLocation ? (
+                            <>
+                                <p className="mt-2 text-lg font-bold text-slate-900 line-clamp-2">
+                                    {stats.topLocation.label}
+                                </p>
+                                <p className="text-xs text-slate-600 mt-2 font-medium">
+                                    {stats.topLocation.count} rings
+                                </p>
+                            </>
+                        ) : (
+                            <p className="mt-2 text-sm text-slate-500">No data yet</p>
+                        )}
+                    </div>
+                    <LocationOnIcon className="!text-3xl text-blue-600 flex-shrink-0" />
                 </div>
             </div>
         </div>

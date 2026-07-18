@@ -5,22 +5,27 @@ import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
+import HistoryIcon from "@mui/icons-material/History";
+import LogoutIcon from "@mui/icons-material/Logout";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 export default function HomeownerNav() {
     const pathname = usePathname();
     const router = useRouter();
 
     const links = [
-        { href: "/dashboard", label: "Dashboard" },
-        { href: "/qr-codes", label: "QR Codes" },
-        { href: "/visits", label: "Visits" },
+        { href: "/dashboard", label: "Dashboard", icon: DashboardIcon },
+        { href: "/qr-codes", label: "QR Codes", icon: QrCode2Icon },
+        { href: "/visits", label: "Visits", icon: HistoryIcon },
+        { href: "/settings", label: "Settings", icon: SettingsIcon },
     ];
 
     async function handleSignOut() {
         try {
-            // Sign out from Firebase
             await signOut(auth);
-            // Clear the session cookie
             await fetch("/api/auth/session", { method: "DELETE" });
             router.push("/login");
             router.refresh();
@@ -30,32 +35,86 @@ export default function HomeownerNav() {
     }
 
     return (
-        <nav className="border-b border-zinc-200 bg-white">
-            <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-8">
-                    <h1 className="text-lg font-semibold text-zinc-900">🔔 KnockKnock</h1>
-                    <div className="hidden sm:flex gap-6">
-                        {links.map((link) => (
+        <>
+            {/* Desktop Navigation */}
+            <nav className="hidden sm:block sticky top-0 z-40 border-b border-slate-200 bg-white shadow-sm">
+                <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <NotificationsIcon className="!text-2xl text-blue-600" />
+                        <h1 className="text-lg font-bold text-slate-900">KnockKnock</h1>
+                    </div>
+                    <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
+                        {links.map((link) => {
+                            const Icon = link.icon;
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-md font-medium text-sm transition-all ${pathname === link.href
+                                        ? "bg-white text-blue-600 shadow-sm"
+                                        : "text-slate-600 hover:text-slate-900"
+                                        }`}
+                                >
+                                    <Icon className="!text-lg" />
+                                    <span>{link.label}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleSignOut}
+                            className="rounded-md bg-slate-100 hover:bg-slate-200 text-slate-900 font-medium px-4 py-2 text-sm transition-all flex items-center gap-2"
+                        >
+                            <LogoutIcon className="!text-lg" />
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            {/* Mobile Top Bar */}
+            <nav className="sm:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+                <div className="px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <NotificationsIcon className="!text-xl text-blue-600" />
+                        <h1 className="text-sm font-bold text-slate-900">KnockKnock</h1>
+                    </div>
+                    <button
+                        onClick={handleSignOut}
+                        className="rounded-md bg-slate-100 text-slate-900 px-3 py-1.5 text-xs font-medium"
+                    >
+                        Sign Out
+                    </button>
+                </div>
+            </nav>
+
+            {/* Mobile Bottom Navigation */}
+            <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-xl">
+                <div className="flex justify-around">
+                    {links.map((link) => {
+                        const Icon = link.icon;
+                        return (
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`text-sm font-medium transition ${pathname === link.href
-                                    ? "text-zinc-900 border-b-2 border-zinc-900 pb-1"
-                                    : "text-zinc-600 hover:text-zinc-900"
+                                className={`flex flex-col items-center gap-1 flex-1 py-3 transition-all ${pathname === link.href
+                                    ? "bg-slate-50 text-blue-600 border-t-2 border-blue-600"
+                                    : "text-slate-500 hover:text-slate-700"
                                     }`}
                             >
-                                {link.label}
+                                <Icon className="!text-xl" />
+                                <span className="text-xs font-semibold">{link.label}</span>
                             </Link>
-                        ))}
-                    </div>
+                        );
+                    })}
                 </div>
-                <button
-                    onClick={handleSignOut}
-                    className="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-200"
-                >
-                    Sign Out
-                </button>
             </div>
-        </nav>
+
+            {/* Mobile top spacing */}
+            <div className="sm:hidden h-12" />
+            {/* Mobile bottom spacing */}
+            <div className="sm:hidden h-20" />
+        </>
     );
 }

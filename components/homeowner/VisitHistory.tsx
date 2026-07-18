@@ -24,68 +24,67 @@ export default function VisitHistory({ showLimit = 50 }: Props) {
     const [qrCodes, setQrCodes] = useState<string[]>([]);
 
     useEffect(() => {
-        // Set a timeout to ensure auth is initialized
-        const checkAuth = setTimeout(() => {
-            const user = auth.currentUser;
-            if (!user) {
-                console.log("No user found, trying again...");
-                return;
-            }
+        const user = auth.currentUser;
+        if (!user) {
+            console.log("No user found for visits");
+            setLoading(false);
+            return;
+        }
 
-            let unsubscribe: Unsubscribe;
+        let unsubscribe: Unsubscribe | undefined;
 
-            const setupListener = async () => {
-                try {
-                    const q = query(
-                        collection(db, "visits"),
-                        where("ownerId", "==", user.uid),
-                        orderBy("timestamp", "desc"),
-                        limit(showLimit)
-                    );
+        try {
+            const q = query(
+                collection(db, "visits"),
+                where("ownerId", "==", user.uid),
+                orderBy("timestamp", "desc"),
+                limit(showLimit)
+            );
 
-                    unsubscribe = onSnapshot(
-                        q,
-                        (snapshot) => {
-                            const visitsData: Visit[] = [];
-                            const codeSet = new Set<string>();
+            unsubscribe = onSnapshot(
+                q,
+                (snapshot) => {
+                    const visitsData: Visit[] = [];
+                    const codeSet = new Set<string>();
 
-                            snapshot.forEach((doc) => {
-                                const data = doc.data();
-                                visitsData.push({
-                                    id: doc.id,
-                                    qrCodeId: data.qrCodeId,
-                                    qrLabel: data.qrLabel || "Unknown Location",
-                                    message: data.message || null,
-                                    timestamp: data.timestamp?.toDate?.()?.toISOString() || new Date().toISOString(),
-                                });
-                                codeSet.add(data.qrCodeId);
-                            });
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        visitsData.push({
+                            id: doc.id,
+                            qrCodeId: data.qrCodeId,
+                            qrLabel: data.qrLabel || "Unknown Location",
+                            message: data.message || null,
+                            timestamp: data.timestamp?.toDate?.()?.toISOString() || new Date().toISOString(),
+                        });
+                        codeSet.add(data.qrCodeId);
+                    });
 
-                            setVisits(visitsData);
-                            setQrCodes(Array.from(codeSet));
-                            setLoading(false);
-                        },
-                        (error) => {
-                            console.error("Error fetching visits:", error);
-                            setLoading(false);
-                        }
-                    );
-                } catch (error) {
-                    console.error("Error setting up visits listener:", error);
+                    setVisits(visitsData);
+                    setQrCodes(Array.from(codeSet));
+                    setLoading(false);
+                    console.log("📊 Loaded", visitsData.length, "visits");
+                },
+                (error: any) => {
+                    console.error("❌ Error fetching visits:", error?.code, error?.message);
+                    if (error?.code === "permission-denied") {
+                        console.error("📋 Check Firestore security rules and composite indexes");
+                    }
+                    if (error?.code === "failed-precondition") {
+                        console.error("📋 Composite index required. Check Firebase Console");
+                    }
                     setLoading(false);
                 }
-            };
+            );
+        } catch (error: any) {
+            console.error("❌ Error setting up visits listener:", error?.message);
+            setLoading(false);
+        }
 
-            setupListener();
-
-            return () => {
-                if (unsubscribe) {
-                    unsubscribe();
-                }
-            };
-        }, 100);
-
-        return () => clearTimeout(checkAuth);
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
     }, [showLimit]);
 
     const filteredVisits = selectedQrCode

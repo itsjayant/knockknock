@@ -11,7 +11,7 @@ export default async function HomeownerLayout({
     if (!user) redirect("/login");
 
     return (
-        <div className="min-h-screen flex flex-col bg-zinc-50">
+        <div className="min-h-screen flex flex-col bg-white">
             <HomeownerNav />
             {children}
         </div>

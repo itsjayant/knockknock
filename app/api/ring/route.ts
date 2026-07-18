@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body: unknown = await request.json();
-        const { code, message } = ringSchema.parse(body);
+        const { code, message, visitorId, visitorName } = ringSchema.parse(body);
 
         // Look up the QR code
         const qrCodeDoc = await adminDb.collection("qrCodes").doc(code).get();
@@ -80,11 +80,28 @@ export async function POST(request: NextRequest) {
 
         await visitRef.set({
             qrCodeId: code,
+            qrLabel,
             ownerId,
             message: message || null,
+            visitorId: visitorId || null,
+            visitorName: visitorName || null,
             timestamp: serverTimestamp(),
             visitId,
         });
+
+        // Get user's ringtone settings
+        let ringtoneId = "default";
+        let volume = 70;
+        try {
+            const settingsDoc = await adminDb.collection("userSettings").doc(ownerId).get();
+            if (settingsDoc.exists) {
+                const settings = settingsDoc.data() as { ringtoneId?: string; volume?: number };
+                if (settings.ringtoneId) ringtoneId = settings.ringtoneId;
+                if (settings.volume !== undefined) volume = settings.volume;
+            }
+        } catch (err) {
+            console.warn(`⚠️  Could not fetch settings for owner ${ownerId}, using defaults`);
+        }
 
         // Get all FCM tokens for the homeowner
         const tokensSnapshot = await adminDb
@@ -103,6 +120,8 @@ export async function POST(request: NextRequest) {
                 timestamp,
                 message: message || null,
                 qrLabel,
+                ringtoneId,
+                volume: volume.toString(),
             };
 
             for (const token of tokens) {
@@ -118,6 +137,8 @@ export async function POST(request: NextRequest) {
                             visitId,
                             qrLabel,
                             message: message || "",
+                            ringtoneId,
+                            volume: volume.toString(),
                         },
                     });
                     console.log(`✅ Notification sent successfully`);
