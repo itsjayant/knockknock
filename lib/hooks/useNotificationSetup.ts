@@ -94,8 +94,8 @@ export function useNotificationSetup() {
                                 notification.title || "KnockKnock",
                                 {
                                     body: notification.body || "Someone is at your door!",
-                                    icon: "/next.svg",
-                                    badge: "/vercel.svg",
+                                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%230f172a" rx="40" width="192" height="192"/><path d="M 96 40 Q 120 50 120 80 L 120 100 Q 96 115 72 100 L 72 80 Q 72 50 96 40 Z M 96 115 L 96 135" stroke="%23ffffff" stroke-width="8" fill="none" stroke-linecap="round"/></svg>',
+                                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect fill="%230f172a" rx="20" width="96" height="96"/><path d="M 48 20 Q 60 25 60 40 L 60 50 Q 48 57 36 50 L 36 40 Q 36 25 48 20 Z M 48 57 L 48 67" stroke="%23ffffff" stroke-width="4" fill="none" stroke-linecap="round"/></svg>',
                                     tag: "knockknock-notification",
                                     requireInteraction: true,
                                     data: data || {},
@@ -119,8 +119,16 @@ export function useNotificationSetup() {
     }, [permission]);
 
     async function requestNotificationPermission() {
-        if (!("Notification" in window)) {
-            console.log("Notifications not supported");
+        // Check HTTPS requirement
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+            console.error('❌ Web Push requires HTTPS (or localhost for testing)');
+            alert('Notifications require HTTPS. Please access from a secure connection.');
+            setLoading(false);
+            return false;
+        }
+
+        if (!('Notification' in window)) {
+            console.log('❌ Notifications not supported');
             return false;
         }
 

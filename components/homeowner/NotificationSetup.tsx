@@ -15,27 +15,33 @@ export default function NotificationSetup() {
         );
     }
 
-    // Show Safari-specific message
+    // Show Safari-specific message (but with correct info)
     if (isSafari && !notificationsSupported) {
         return (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
+            <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3">
                 <div className="flex items-start gap-3">
                     <svg
-                        className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5"
+                        className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                     >
                         <path
                             fillRule="evenodd"
-                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0z"
                             clipRule="evenodd"
                         />
                     </svg>
                     <div className="text-sm">
-                        <p className="font-semibold text-amber-900">Safari doesn't support web notifications</p>
-                        <p className="text-amber-700 text-xs mt-2">
-                            Safari on iOS and macOS doesn't support web push notifications yet. To get doorbell alerts on your iPhone, add this app to your Home Screen (tap Share → Add to Home Screen). 📱
+                        <p className="font-semibold text-blue-900">iOS Safari Web Push Setup</p>
+                        <p className="text-blue-700 text-xs mt-2">
+                            To receive notifications on iPhone/iPad:
                         </p>
+                        <ol className="text-blue-700 text-xs mt-2 ml-4 space-y-1 list-decimal">
+                            <li>Make sure you're on <strong>HTTPS</strong> (secure connection)</li>
+                            <li>Add this app to Home Screen (Share → Add to Home Screen)</li>
+                            <li>Open the app from Home Screen and tap Enable below</li>
+                            <li>Grant notification permission when prompted</li>
+                        </ol>
                     </div>
                 </div>
             </div>
