@@ -13,6 +13,7 @@ export default function HomeownerNav() {
     const links = [
         { href: "/dashboard", label: "Dashboard" },
         { href: "/qr-codes", label: "QR Codes" },
+        { href: "/visits", label: "Visits" },
     ];
 
     async function handleSignOut() {
@@ -39,8 +40,8 @@ export default function HomeownerNav() {
                                 key={link.href}
                                 href={link.href}
                                 className={`text-sm font-medium transition ${pathname === link.href
-                                        ? "text-zinc-900 border-b-2 border-zinc-900 pb-1"
-                                        : "text-zinc-600 hover:text-zinc-900"
+                                    ? "text-zinc-900 border-b-2 border-zinc-900 pb-1"
+                                    : "text-zinc-600 hover:text-zinc-900"
                                     }`}
                             >
                                 {link.label}

@@ -1,6 +1,6 @@
 import { getSessionUser } from "@/lib/auth";
 import NotificationSetup from "@/components/homeowner/NotificationSetup";
-import VisitHistory from "@/components/homeowner/VisitHistory";
+import DashboardStats from "@/components/homeowner/DashboardStats";
 import RecentRings from "@/components/homeowner/RecentRings";
 import type { Metadata } from "next";
 
@@ -24,13 +24,13 @@ export default async function DashboardPage() {
 
             <div className="space-y-6">
                 <section>
-                    <h2 className="text-lg font-semibold text-zinc-900 mb-4">Notifications</h2>
-                    <NotificationSetup />
+                    <h2 className="text-lg font-semibold text-zinc-900 mb-4">Activity Overview</h2>
+                    <DashboardStats />
                 </section>
 
                 <section>
-                    <h2 className="text-lg font-semibold text-zinc-900 mb-4">Visit History</h2>
-                    <VisitHistory />
+                    <h2 className="text-lg font-semibold text-zinc-900 mb-4">Notifications</h2>
+                    <NotificationSetup />
                 </section>
             </div>
         </main>

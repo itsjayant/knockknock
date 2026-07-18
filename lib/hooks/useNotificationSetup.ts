@@ -26,7 +26,11 @@ export function useNotificationSetup() {
         const checkExistingToken = async () => {
             try {
                 const user = auth.currentUser;
-                if (!user) return;
+                if (!user) {
+                    // User not ready yet, retry
+                    setTimeout(checkExistingToken, 500);
+                    return;
+                }
 
                 const q = query(
                     collection(db, "fcmTokens"),
@@ -37,6 +41,8 @@ export function useNotificationSetup() {
                 if (!snapshot.empty) {
                     setRegistered(true);
                     console.log("✅ Found existing FCM token registration");
+                } else {
+                    setRegistered(false);
                 }
             } catch (error) {
                 console.error("Error checking for existing tokens:", error);
