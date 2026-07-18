@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
         // Generate a unique token (UUIDv4 has 128 bits of entropy)
         const token = crypto.randomUUID();
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const createdAtISO = new Date().toISOString();
 
         // Create the QR code document in Firestore
         const qrCodeRef = adminDb.collection("qrCodes").doc(token);
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
                 id: token,
                 label,
                 isActive: true,
+                createdAt: createdAtISO,
                 url: `${appUrl}/ring?code=${token}`,
             },
             { status: 201 }

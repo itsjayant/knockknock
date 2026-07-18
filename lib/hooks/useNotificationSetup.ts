@@ -3,7 +3,7 @@ import { getMessagingClient } from "@/lib/firebase";
 import { getToken, onMessage } from "firebase/messaging";
 import { db } from "@/lib/firebase";
 import { auth } from "@/lib/firebase";
-import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, setDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 
 export function useNotificationSetup() {
     const [permission, setPermission] = useState<NotificationPermission | null>(null);
@@ -20,6 +20,33 @@ export function useNotificationSetup() {
             setPermission(Notification.permission);
         }
     }, []);
+
+    // Check if user already has a registered notification token
+    useEffect(() => {
+        const checkExistingToken = async () => {
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+
+                const q = query(
+                    collection(db, "fcmTokens"),
+                    where("userId", "==", user.uid)
+                );
+                const snapshot = await getDocs(q);
+
+                if (!snapshot.empty) {
+                    setRegistered(true);
+                    console.log("✅ Found existing FCM token registration");
+                }
+            } catch (error) {
+                console.error("Error checking for existing tokens:", error);
+            }
+        };
+
+        if (mounted && permission === "granted") {
+            checkExistingToken();
+        }
+    }, [mounted, permission]);
 
     // Set up foreground message listener when permission is granted
     useEffect(() => {

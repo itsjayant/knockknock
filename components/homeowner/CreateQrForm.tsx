@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useIdToken } from "@/lib/hooks/useIdToken";
 
@@ -8,6 +8,7 @@ type CreateQrResponse = {
     id: string;
     label: string;
     isActive: boolean;
+    createdAt: string;
     url: string;
 };
 
@@ -43,10 +44,23 @@ export default function CreateQrForm({ onSuccess }: Props) {
             if (!res.ok) throw new Error("Failed to create QR code");
 
             const data = (await res.json()) as CreateQrResponse;
+
+            // Add the new QR code to the list immediately
+            const newQrCode = {
+                id: data.id,
+                label: data.label,
+                isActive: data.isActive ?? true,
+                createdAt: data.createdAt,
+                url: data.url,
+            };
+
+            if ((window as any).__addQrCode) {
+                (window as any).__addQrCode(newQrCode);
+            }
+
             setLabel("");
             setSuccess(true);
             setTimeout(() => setSuccess(false), 3000); // Show success for 3s
-            router.refresh();
             onSuccess?.();
         } catch (err) {
             setError(err instanceof Error ? err.message : "Creation failed");

@@ -16,15 +16,31 @@ type QrCode = {
 
 type Props = {
   initialQrCodes: QrCode[];
+  onNewQrCode?: (qrCode: QrCode) => void;
 };
 
-export default function QrCodesList({ initialQrCodes }: Props) {
+export default function QrCodesList({ initialQrCodes, onNewQrCode }: Props) {
   const { idToken, loading: tokenLoading } = useIdToken();
   const router = useRouter();
   const [qrCodes, setQrCodes] = useState<QrCode[]>(initialQrCodes);
   const [qrImages, setQrImages] = useState<Record<string, string>>({}); // QR code data URLs
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Update codes when new ones are added from CreateQrForm
+  const addQrCode = (newQrCode: QrCode) => {
+    setQrCodes((prev) => [newQrCode, ...prev]);
+    onNewQrCode?.(newQrCode);
+  };
+
+  // Expose addQrCode via window for parent component
+  useEffect(() => {
+    (window as any).__addQrCode = addQrCode;
+    return () => {
+      delete (window as any).__addQrCode;
+    };
+  }, []);
 
   // Generate QR code images on mount and when codes change
   useEffect(() => {
@@ -62,6 +78,12 @@ export default function QrCodesList({ initialQrCodes }: Props) {
     }
   }
 
+  function handleCopyLink(qrId: string, url: string) {
+    navigator.clipboard.writeText(url);
+    setCopiedId(qrId);
+    setTimeout(() => setCopiedId(null), 2000);
+  }
+
   return (
     <div className="space-y-6">
       {error && (
@@ -70,7 +92,7 @@ export default function QrCodesList({ initialQrCodes }: Props) {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2">
         {qrCodes.length === 0 ? (
           <p className="col-span-full text-center text-sm text-zinc-500">
             No QR codes yet. Create one to get started.
@@ -83,11 +105,11 @@ export default function QrCodesList({ initialQrCodes }: Props) {
             >
               {/* Status Badge */}
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-zinc-900">{qr.label}</h3>
+                <h3 className="font-semibold text-zinc-900 truncate">{qr.label}</h3>
                 <span
-                  className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${qr.isActive
-                    ? "bg-green-50 text-green-700"
-                    : "bg-zinc-100 text-zinc-500"
+                  className={`inline-block rounded-full px-2 py-1 text-xs font-medium flex-shrink-0 ${qr.isActive
+                      ? "bg-green-50 text-green-700"
+                      : "bg-zinc-100 text-zinc-500"
                     }`}
                 >
                   {qr.isActive ? "Active" : "Inactive"}
@@ -95,12 +117,12 @@ export default function QrCodesList({ initialQrCodes }: Props) {
               </div>
 
               {/* QR Code Image */}
-              <div className="flex items-center justify-center rounded-lg bg-zinc-50 p-4">
+              <div className="flex items-center justify-center rounded-lg bg-zinc-50 p-4 min-h-56">
                 {qrImages[qr.id] ? (
                   <img
                     src={qrImages[qr.id]}
                     alt={`QR code for ${qr.label}`}
-                    className="h-48 w-48 rounded"
+                    className="h-40 w-40 rounded"
                   />
                 ) : (
                   <div className="text-center">
@@ -117,13 +139,13 @@ export default function QrCodesList({ initialQrCodes }: Props) {
               {/* Actions */}
               <div className="flex gap-2">
                 <button
-                  onClick={() => {
-                    const url = qr.url;
-                    navigator.clipboard.writeText(url);
-                  }}
-                  className="flex-1 rounded-lg bg-zinc-100 px-3 py-2 text-xs font-medium text-zinc-700 transition hover:bg-zinc-200"
+                  onClick={() => handleCopyLink(qr.id, qr.url)}
+                  className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition ${copiedId === qr.id
+                      ? "bg-green-100 text-green-700"
+                      : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                    }`}
                 >
-                  Copy Link
+                  {copiedId === qr.id ? "✓ Copied!" : "Copy Link"}
                 </button>
                 <button
                   onClick={() => handleDelete(qr.id)}
