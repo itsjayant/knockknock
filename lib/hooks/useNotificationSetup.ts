@@ -26,8 +26,22 @@ export function useNotificationSetup() {
         // Check if notifications are supported
         const notificationsAPI = "Notification" in window;
         const serviceWorkerAPI = "serviceWorker" in navigator;
-        const pushAPI = "pushManager" in ServiceWorkerRegistration.prototype || false;
+
+        // For iOS Safari in PWA mode, we don't need to check pushManager
+        // Just having Notification API and service worker is enough
+        const isPWAiOS = isSafariUA && isIOS;
+        const pushAPI = isPWAiOS || ("pushManager" in ServiceWorkerRegistration.prototype);
         const supported = notificationsAPI && serviceWorkerAPI && pushAPI;
+
+        console.log("🔍 Notification support check:", {
+            notificationsAPI,
+            serviceWorkerAPI,
+            pushAPI,
+            isPWAiOS,
+            supported,
+            isSafariUA,
+            isIOS,
+        });
 
         setNotificationsSupported(supported);
 
@@ -202,6 +216,13 @@ export function useNotificationSetup() {
 
             setRegistered(true);
             console.log("✅ FCM token registered successfully!");
+
+            // Re-check and update permission state after successful registration
+            // iOS Safari needs a small delay to properly settle the permission state
+            await new Promise(resolve => setTimeout(resolve, 100));
+            const finalPermission = Notification.permission;
+            setPermission(finalPermission);
+            console.log("📬 Final permission state:", finalPermission);
 
             setLoading(false);
             return true;

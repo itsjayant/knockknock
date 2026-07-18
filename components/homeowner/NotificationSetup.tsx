@@ -1,10 +1,23 @@
 "use client";
 
+import React from "react";
 import { useNotificationSetup } from "@/lib/hooks/useNotificationSetup";
 
 export default function NotificationSetup() {
     const { permission, loading, registered, requestNotificationPermission, mounted, isSafari, notificationsSupported } =
         useNotificationSetup();
+
+    // Debug logging
+    React.useEffect(() => {
+        console.log("🔍 NotificationSetup state:", {
+            mounted,
+            permission,
+            registered,
+            loading,
+            isSafari,
+            notificationsSupported,
+        });
+    }, [mounted, permission, registered, loading, isSafari, notificationsSupported]);
 
     // Don't render until after hydration to avoid mismatch
     if (!mounted) {
@@ -15,7 +28,13 @@ export default function NotificationSetup() {
         );
     }
 
-    // Show Safari-specific message (but with correct info)
+    // Hide when fully enabled
+    if (permission === "granted" && registered) {
+        console.log("✅ Notifications fully enabled - hiding banner");
+        return null;
+    }
+
+    // Show setup instructions if Safari and notifications not supported
     if (isSafari && !notificationsSupported) {
         return (
             <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3">
@@ -32,24 +51,14 @@ export default function NotificationSetup() {
                         />
                     </svg>
                     <div className="text-sm">
-                        <p className="font-semibold text-blue-900">iOS Safari Web Push Setup</p>
+                        <p className="font-semibold text-blue-900">Safari Web Push Setup Required</p>
                         <p className="text-blue-700 text-xs mt-2">
-                            To receive notifications on iPhone/iPad:
+                            Notifications require PWA mode (Home Screen).
                         </p>
-                        <ol className="text-blue-700 text-xs mt-2 ml-4 space-y-1 list-decimal">
-                            <li>Make sure you're on <strong>HTTPS</strong> (secure connection)</li>
-                            <li>Add this app to Home Screen (Share → Add to Home Screen)</li>
-                            <li>Open the app from Home Screen and tap Enable below</li>
-                            <li>Grant notification permission when prompted</li>
-                        </ol>
                     </div>
                 </div>
             </div>
         );
-    }
-
-    if (permission === "granted" && registered) {
-        return null; // Don't show anything when notifications are fully enabled
     }
 
     if (permission === "denied") {
