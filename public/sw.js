@@ -97,11 +97,11 @@ self.addEventListener('sync', (event) => {
     }
 });
 
-// Ringtone mappings with simple WAV data URIs
+// Ringtone mappings - we'll generate sounds using Web Audio API
 const RINGTONES = {
-    default: 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==',
-    chime: 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==',
-    ding: 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==',
+    default: 'default',
+    chime: 'chime',
+    ding: 'ding',
 };
 
 // Handle push notifications
@@ -126,21 +126,72 @@ self.addEventListener('push', (event) => {
 
     event.waitUntil(
         self.registration.showNotification(title, options).then(() => {
-            // Play ringtone if available
-            playRingtone(ringtoneId, volume);
+            // Notify all clients to play ringtone
+            self.clients.matchAll().then((clients) => {
+                clients.forEach((client) => {
+                    client.postMessage({
+                        type: 'PLAY_RINGTONE',
+                        ringtoneId,
+                        volume,
+                    });
+                });
+            });
         })
     );
 });
 
-// Play ringtone helper
+// Play ringtone helper using Web Audio API
 function playRingtone(ringtoneId, volume) {
     try {
-        const ringtoneUrl = RINGTONES[ringtoneId] || RINGTONES.default;
-        const audio = new Audio(ringtoneUrl);
-        audio.volume = Math.min(volume / 100, 1);
-        audio.play().catch((err) => {
-            console.warn('⚠️  Could not play ringtone:', err);
-        });
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioContext.currentTime;
+        const duration = 1.5;
+        const volumeNormalized = Math.min(volume / 100, 1);
+
+        const gainNode = audioContext.createGain();
+        gainNode.connect(audioContext.destination);
+        gainNode.gain.setValueAtTime(volumeNormalized, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+        if (ringtoneId === 'default') {
+            const osc1 = audioContext.createOscillator();
+            osc1.frequency.setValueAtTime(400, now);
+            osc1.connect(gainNode);
+            osc1.start(now);
+            osc1.stop(now + 0.3);
+
+            const osc2 = audioContext.createOscillator();
+            osc2.frequency.setValueAtTime(600, now + 0.3);
+            osc2.connect(gainNode);
+            osc2.start(now + 0.3);
+            osc2.stop(now + duration);
+        } else if (ringtoneId === 'chime') {
+            const osc1 = audioContext.createOscillator();
+            osc1.frequency.setValueAtTime(800, now);
+            osc1.frequency.exponentialRampToValueAtTime(400, now + 0.4);
+            osc1.connect(gainNode);
+            osc1.start(now);
+            osc1.stop(now + 0.4);
+
+            const osc2 = audioContext.createOscillator();
+            osc2.frequency.setValueAtTime(600, now + 0.4);
+            osc2.frequency.exponentialRampToValueAtTime(300, now + 0.8);
+            osc2.connect(gainNode);
+            osc2.start(now + 0.4);
+            osc2.stop(now + duration);
+        } else if (ringtoneId === 'ding') {
+            const osc1 = audioContext.createOscillator();
+            osc1.frequency.setValueAtTime(1000, now);
+            osc1.connect(gainNode);
+            osc1.start(now);
+            osc1.stop(now + 0.25);
+
+            const osc2 = audioContext.createOscillator();
+            osc2.frequency.setValueAtTime(500, now + 0.35);
+            osc2.connect(gainNode);
+            osc2.start(now + 0.35);
+            osc2.stop(now + duration);
+        }
     } catch (err) {
         console.error('❌ Error playing ringtone:', err);
     }

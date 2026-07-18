@@ -9,9 +9,9 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const DEFAULT_RINGTONES = [
-    { id: 'default', name: 'Default Bell', url: 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==' },
-    { id: 'chime', name: 'Gentle Chime', url: 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==' },
-    { id: 'ding', name: 'Ding Dong', url: 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAA==' },
+    { id: 'default', name: 'Default Bell' },
+    { id: 'chime', name: 'Gentle Chime' },
+    { id: 'ding', name: 'Ding Dong' },
 ];
 
 type UserSettings = {
@@ -69,14 +69,59 @@ export default function SettingsForm({ userId }: { userId: string }) {
 
     const handlePlayRingtone = async () => {
         try {
-            const selectedRingtone = DEFAULT_RINGTONES.find(
-                (rt) => rt.id === settings.ringtoneId
-            );
-            if (!selectedRingtone) return;
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const now = audioContext.currentTime;
+            const duration = 1.5;
+            const volume = settings.volume / 100;
 
-            const audio = new Audio(selectedRingtone.url);
-            audio.volume = settings.volume / 100;
-            await audio.play();
+            // Create gain node for volume control
+            const gainNode = audioContext.createGain();
+            gainNode.connect(audioContext.destination);
+            gainNode.gain.setValueAtTime(volume, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+            if (settings.ringtoneId === 'default') {
+                // Default Bell: Two tones (low then high)
+                const osc1 = audioContext.createOscillator();
+                osc1.frequency.setValueAtTime(400, now);
+                osc1.connect(gainNode);
+                osc1.start(now);
+                osc1.stop(now + 0.3);
+
+                const osc2 = audioContext.createOscillator();
+                osc2.frequency.setValueAtTime(600, now + 0.3);
+                osc2.connect(gainNode);
+                osc2.start(now + 0.3);
+                osc2.stop(now + duration);
+            } else if (settings.ringtoneId === 'chime') {
+                // Gentle Chime: Descending tones
+                const osc1 = audioContext.createOscillator();
+                osc1.frequency.setValueAtTime(800, now);
+                osc1.frequency.exponentialRampToValueAtTime(400, now + 0.4);
+                osc1.connect(gainNode);
+                osc1.start(now);
+                osc1.stop(now + 0.4);
+
+                const osc2 = audioContext.createOscillator();
+                osc2.frequency.setValueAtTime(600, now + 0.4);
+                osc2.frequency.exponentialRampToValueAtTime(300, now + 0.8);
+                osc2.connect(gainNode);
+                osc2.start(now + 0.4);
+                osc2.stop(now + duration);
+            } else if (settings.ringtoneId === 'ding') {
+                // Ding Dong: Sharp high then low
+                const osc1 = audioContext.createOscillator();
+                osc1.frequency.setValueAtTime(1000, now);
+                osc1.connect(gainNode);
+                osc1.start(now);
+                osc1.stop(now + 0.25);
+
+                const osc2 = audioContext.createOscillator();
+                osc2.frequency.setValueAtTime(500, now + 0.35);
+                osc2.connect(gainNode);
+                osc2.start(now + 0.35);
+                osc2.stop(now + duration);
+            }
         } catch (error) {
             console.error('Error playing ringtone:', error);
         }

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import PWAInitializer from "@/components/PWAInitializer";
+import RingtoneListener from "@/components/RingtoneListener";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -56,6 +57,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-white" suppressHydrationWarning>
         <PWAInitializer />
+        <RingtoneListener />
         {children}
       </body>
     </html>
