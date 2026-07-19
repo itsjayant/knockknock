@@ -169,8 +169,8 @@ export default function VisitHistory({ showLimit = 50 }: Props) {
 
                             {visit.message && (
                                 <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-                                    <p className="text-xs font-medium text-blue-900">Message:</p>
-                                    <p className="mt-1 text-sm text-blue-800 break-words">{visit.message}</p>
+                                    <p className="text-xs font-medium text-gray-900">Message:</p>
+                                    <p className="mt-1 text-sm text-gray-800 break-words">{visit.message}</p>
                                 </div>
                             )}
                         </div>

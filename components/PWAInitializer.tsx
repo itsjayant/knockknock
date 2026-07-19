@@ -6,6 +6,8 @@ import DownloadIcon from '@mui/icons-material/Download';
 export default function PWAInitializer() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showInstallButton, setShowInstallButton] = useState(false);
+    // Install app button disabled - users can install via browser menu
+    const ENABLE_INSTALL_BUTTON = false;
 
     useEffect(() => {
         // Register service worker
@@ -20,13 +22,15 @@ export default function PWAInitializer() {
                 });
         }
 
-        // Handle install prompt
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            setDeferredPrompt(e);
-            setShowInstallButton(true);
-            console.log('📱 Install prompt available');
-        });
+        // Handle install prompt (disabled - let browser handle)
+        if (ENABLE_INSTALL_BUTTON) {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                setDeferredPrompt(e);
+                setShowInstallButton(true);
+                console.log('📱 Install prompt available');
+            });
+        }
 
         // Handle app installed
         window.addEventListener('appinstalled', () => {
@@ -54,7 +58,7 @@ export default function PWAInitializer() {
         <div className="fixed bottom-24 sm:bottom-0 right-4 z-50 animate-slide-in">
             <button
                 onClick={handleInstallClick}
-                className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-white font-semibold shadow-lg hover:shadow-xl hover:bg-blue-700 active:bg-blue-800 transition-all"
+                className="flex items-center gap-2 rounded-lg bg-black px-6 py-3 text-white font-semibold shadow-lg hover:shadow-xl hover:bg-gray-900 active:bg-black transition-all"
             >
                 <DownloadIcon className="!text-lg" />
                 <span>Install App</span>

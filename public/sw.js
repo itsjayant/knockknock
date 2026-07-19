@@ -97,13 +97,6 @@ self.addEventListener('sync', (event) => {
     }
 });
 
-// Ringtone mappings - we'll generate sounds using Web Audio API
-const RINGTONES = {
-    default: 'default',
-    chime: 'chime',
-    ding: 'ding',
-};
-
 // Handle push notifications
 self.addEventListener('push', (event) => {
     const notificationData = event.data?.json?.() || {};
@@ -112,7 +105,7 @@ self.addEventListener('push', (event) => {
     const title = notificationData.notification?.title || 'KnockKnock';
     const body = notificationData.notification?.body || 'Someone is at your door!';
     const ringtoneId = data.ringtoneId || 'default';
-    const volume = parseInt(data.volume) || 70;
+    const volume = parseInt(data.volume || '70');
 
     const options = {
         body,
@@ -140,62 +133,7 @@ self.addEventListener('push', (event) => {
     );
 });
 
-// Play ringtone helper using Web Audio API
-function playRingtone(ringtoneId, volume) {
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const now = audioContext.currentTime;
-        const duration = 1.5;
-        const volumeNormalized = Math.min(volume / 100, 1);
-
-        const gainNode = audioContext.createGain();
-        gainNode.connect(audioContext.destination);
-        gainNode.gain.setValueAtTime(volumeNormalized, now);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
-
-        if (ringtoneId === 'default') {
-            const osc1 = audioContext.createOscillator();
-            osc1.frequency.setValueAtTime(400, now);
-            osc1.connect(gainNode);
-            osc1.start(now);
-            osc1.stop(now + 0.3);
-
-            const osc2 = audioContext.createOscillator();
-            osc2.frequency.setValueAtTime(600, now + 0.3);
-            osc2.connect(gainNode);
-            osc2.start(now + 0.3);
-            osc2.stop(now + duration);
-        } else if (ringtoneId === 'chime') {
-            const osc1 = audioContext.createOscillator();
-            osc1.frequency.setValueAtTime(800, now);
-            osc1.frequency.exponentialRampToValueAtTime(400, now + 0.4);
-            osc1.connect(gainNode);
-            osc1.start(now);
-            osc1.stop(now + 0.4);
-
-            const osc2 = audioContext.createOscillator();
-            osc2.frequency.setValueAtTime(600, now + 0.4);
-            osc2.frequency.exponentialRampToValueAtTime(300, now + 0.8);
-            osc2.connect(gainNode);
-            osc2.start(now + 0.4);
-            osc2.stop(now + duration);
-        } else if (ringtoneId === 'ding') {
-            const osc1 = audioContext.createOscillator();
-            osc1.frequency.setValueAtTime(1000, now);
-            osc1.connect(gainNode);
-            osc1.start(now);
-            osc1.stop(now + 0.25);
-
-            const osc2 = audioContext.createOscillator();
-            osc2.frequency.setValueAtTime(500, now + 0.35);
-            osc2.connect(gainNode);
-            osc2.start(now + 0.35);
-            osc2.stop(now + duration);
-        }
-    } catch (err) {
-        console.error('❌ Error playing ringtone:', err);
-    }
-}
+// Note: playRingtone happens in RingtoneListener.tsx (client-side)
 
 // Handle notification clicks
 self.addEventListener('notificationclick', (event) => {

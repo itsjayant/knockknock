@@ -1,14 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
-  --foreground: #0f172a;
+  --foreground: #000000;
 
-  /* Professional Anthropic-style theme */
-  --primary: #0f172a;
-  --primary-light: #1e293b;
-  --secondary: #64748b;
-  --accent: #3b82f6;
+  /* KnockKnock Branding */
+  --primary: #000000;
+  --primary-light: #404040;
+  --secondary: #808080;
+  --accent: #000000;
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -23,8 +24,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'Montserrat', monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -45,33 +46,52 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
+  font-weight: 400;
 }
 
-/* Clean professional button styles */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+/* KnockKnock button styles */
 .btn-primary {
-  @apply rounded-lg bg-slate-900 px-6 py-3 font-semibold text-white shadow-sm hover:shadow-md hover:bg-slate-800 active:bg-slate-950 transition-all;
+  @apply rounded-lg bg-black px-6 py-3 font-semibold text-white shadow-md hover:shadow-lg hover:bg-gray-900 active:bg-black transition-all;
 }
 
 .btn-secondary {
-  @apply rounded-lg bg-slate-200 px-6 py-3 font-semibold text-slate-900 shadow-sm hover:shadow-md hover:bg-slate-300 active:bg-slate-400 transition-all;
+  @apply rounded-lg bg-gray-100 px-6 py-3 font-semibold text-black border border-gray-300 shadow-sm hover:shadow-md hover:bg-gray-50 active:bg-gray-200 transition-all;
 }
 
 .btn-accent {
-  @apply rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-sm hover:shadow-md hover:bg-blue-700 active:bg-blue-800 transition-all;
+  @apply rounded-lg bg-black px-6 py-3 font-semibold text-white shadow-md hover:shadow-lg hover:bg-gray-900 active:bg-black transition-all;
 }
 
-/* Clean card styles */
+/* KnockKnock card styles */
 .card {
-  @apply rounded-lg border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-slate-300;
+  @apply rounded-lg border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-gray-300;
 }
 
 .card-alt {
-  @apply rounded-lg bg-slate-50 p-6 shadow-sm border border-slate-100;
+  @apply rounded-lg bg-gray-50 p-6 shadow-sm border border-gray-200;
 }
 
 /* Smooth animations */
+/* KnockKnock smooth animations */
 @keyframes slide-in {
   from {
     opacity: 0;

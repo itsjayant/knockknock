@@ -81,7 +81,7 @@ export default function RingForm({ code }: Props) {
                         setSubmitted(false);
                         setMessage("");
                     }}
-                    className="rounded-lg bg-slate-900 px-6 py-2 text-sm font-medium text-white hover:bg-slate-800 transition-all"
+                    className="rounded-lg bg-black px-6 py-2 text-sm font-medium text-white hover:bg-gray-900 transition-all"
                 >
                     Ring Again
                 </button>
@@ -96,7 +96,7 @@ export default function RingForm({ code }: Props) {
                 {visitorUser ? (
                     <div>
                         <p className="text-sm font-semibold text-slate-900">
-                            Identified as: <span className="text-blue-600">{visitorUser.displayName || visitorUser.email}</span>
+                            Identified as: <span className="text-black">{visitorUser.displayName || visitorUser.email}</span>
                         </p>
                         <p className="text-xs text-slate-600 mt-1">
                             The homeowner will know who's ringing
@@ -110,7 +110,7 @@ export default function RingForm({ code }: Props) {
                         <div className="flex gap-2 flex-col sm:flex-row">
                             <Link
                                 href="/visitor-signup"
-                                className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-blue-700 transition-all"
+                                className="flex-1 rounded-lg bg-black px-4 py-2 text-center text-sm font-semibold text-white hover:bg-gray-900 transition-all"
                             >
                                 Create Account
                             </Link>
@@ -157,7 +157,7 @@ export default function RingForm({ code }: Props) {
             <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-blue-600 px-6 py-3 text-lg font-semibold text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 transition-all"
+                className="w-full rounded-lg bg-black px-6 py-3 text-lg font-semibold text-white hover:bg-gray-900 active:bg-black disabled:opacity-50 transition-all"
             >
                 {loading ? "Ringing..." : "Ring Doorbell"}
             </button>

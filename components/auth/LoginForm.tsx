@@ -124,6 +124,17 @@ export default function LoginForm({ redirectTo = "/dashboard" }: Props) {
                     {error}
                 </p>
             )}
+
+            {/* Signup Link */}
+            <div className="text-center text-sm text-gray-600">
+                Don't have an account?{" "}
+                <a
+                    href="/visitor-signup"
+                    className="font-semibold text-black hover:text-gray-700 transition"
+                >
+                    Sign up
+                </a>
+            </div>
         </div>
     );
 }

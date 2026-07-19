@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { collection, query, where, orderBy, onSnapshot, Unsubscribe } from "firebase/firestore";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import TodayIcon from "@mui/icons-material/Today";
@@ -34,85 +35,86 @@ export default function DashboardStats() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const user = auth.currentUser;
-        if (!user) {
-            console.log("No user found for stats");
-            return;
-        }
-
         let unsubscribe: Unsubscribe | undefined;
+        let unsubscribeAuth = () => { };
 
-        try {
-            const q = query(
-                collection(db, "visits"),
-                where("ownerId", "==", user.uid),
-                orderBy("timestamp", "desc")
-            );
+        unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                setLoading(false);
+                return;
+            }
 
-            unsubscribe = onSnapshot(
-                q,
-                (snapshot) => {
-                    const now = new Date();
-                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    const sevenDaysAgo = new Date(today);
-                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            try {
+                const q = query(
+                    collection(db, "visits"),
+                    where("ownerId", "==", user.uid),
+                    orderBy("timestamp", "desc")
+                );
 
-                    let todayCount = 0;
-                    let weekCount = 0;
-                    const locationCounts = new Map<string, number>();
+                unsubscribe = onSnapshot(
+                    q,
+                    (snapshot) => {
+                        const now = new Date();
+                        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        const sevenDaysAgo = new Date(today);
+                        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-                    snapshot.forEach((doc) => {
-                        const data = doc.data();
-                        const timestamp = data.timestamp?.toDate?.();
+                        let todayCount = 0;
+                        let weekCount = 0;
+                        const locationCounts = new Map<string, number>();
 
-                        if (timestamp) {
-                            if (timestamp >= today) todayCount++;
-                            if (timestamp >= sevenDaysAgo) weekCount++;
+                        snapshot.forEach((doc) => {
+                            const data = doc.data();
+                            const timestamp = data.timestamp?.toDate?.();
 
-                            const label = data.qrLabel || "Unknown";
-                            locationCounts.set(label, (locationCounts.get(label) || 0) + 1);
+                            if (timestamp) {
+                                if (timestamp >= today) todayCount++;
+                                if (timestamp >= sevenDaysAgo) weekCount++;
+
+                                const label = data.qrLabel || "Unknown";
+                                locationCounts.set(label, (locationCounts.get(label) || 0) + 1);
+                            }
+                        });
+
+                        // Find top location
+                        let topLocation = null;
+                        let maxCount = 0;
+                        locationCounts.forEach((count, label) => {
+                            if (count > maxCount) {
+                                maxCount = count;
+                                topLocation = { label, count };
+                            }
+                        });
+
+                        setStats({
+                            totalRings: snapshot.size,
+                            todayRings: todayCount,
+                            thisWeekRings: weekCount,
+                            topLocation,
+                        });
+                        setLoading(false);
+                        console.log("📊 Loaded stats:", snapshot.size, "total rings");
+                    },
+                    (error: any) => {
+                        console.error("❌ Error fetching stats:", error?.code, error?.message);
+                        if (error?.code === "permission-denied") {
+                            console.error("📋 Check Firestore security rules and composite indexes");
                         }
-                    });
-
-                    // Find top location
-                    let topLocation = null;
-                    let maxCount = 0;
-                    locationCounts.forEach((count, label) => {
-                        if (count > maxCount) {
-                            maxCount = count;
-                            topLocation = { label, count };
+                        if (error?.code === "failed-precondition") {
+                            console.error("📋 Composite index required. Check Firebase Console");
                         }
-                    });
-
-                    setStats({
-                        totalRings: snapshot.size,
-                        todayRings: todayCount,
-                        thisWeekRings: weekCount,
-                        topLocation,
-                    });
-                    setLoading(false);
-                    console.log("📊 Loaded stats:", snapshot.size, "total rings");
-                },
-                (error: any) => {
-                    console.error("❌ Error fetching stats:", error?.code, error?.message);
-                    if (error?.code === "permission-denied") {
-                        console.error("📋 Check Firestore security rules and composite indexes");
+                        setLoading(false);
                     }
-                    if (error?.code === "failed-precondition") {
-                        console.error("📋 Composite index required. Check Firebase Console");
-                    }
-                    setLoading(false);
-                }
-            );
-        } catch (error: any) {
-            console.error("❌ Error setting up stats listener:", error?.message);
-            setLoading(false);
-        }
+                );
+            } catch (error: any) {
+                console.error("❌ Error setting up stats listener:", error?.message);
+                setLoading(false);
+            }
+        });
 
         return () => {
-            if (unsubscribe) {
-                unsubscribe();
-            }
+            unsubscribe?.();
+            unsubscribeAuth();
         };
     }, []);
 
@@ -122,9 +124,9 @@ export default function DashboardStats() {
                 {[...Array(4)].map((_, i) => (
                     <div
                         key={i}
-                        className="rounded-lg border border-slate-200 bg-slate-100 px-4 py-6 animate-pulse"
+                        className="rounded-lg border border-gray-200 bg-gray-100 px-4 py-6 animate-pulse"
                     >
-                        <p className="text-sm text-slate-500">Loading...</p>
+                        <p className="text-sm text-gray-600">Loading...</p>
                     </div>
                 ))}
             </div>
@@ -140,7 +142,7 @@ export default function DashboardStats() {
                         <p className="text-xs font-semibold text-slate-500 uppercase">Total Rings</p>
                         <p className="mt-2 text-4xl font-bold text-slate-900">{stats.totalRings}</p>
                     </div>
-                    <NotificationsIcon className="!text-3xl text-blue-600" />
+                    <NotificationsIcon className="!text-3xl text-black" />
                 </div>
             </div>
 
@@ -151,7 +153,7 @@ export default function DashboardStats() {
                         <p className="text-xs font-semibold text-slate-500 uppercase">Today</p>
                         <p className="mt-2 text-4xl font-bold text-slate-900">{stats.todayRings}</p>
                     </div>
-                    <TodayIcon className="!text-3xl text-blue-600" />
+                    <TodayIcon className="!text-3xl text-black" />
                 </div>
             </div>
 
@@ -162,7 +164,7 @@ export default function DashboardStats() {
                         <p className="text-xs font-semibold text-slate-500 uppercase">This Week</p>
                         <p className="mt-2 text-4xl font-bold text-slate-900">{stats.thisWeekRings}</p>
                     </div>
-                    <BarChartIcon className="!text-3xl text-blue-600" />
+                    <BarChartIcon className="!text-3xl text-black" />
                 </div>
             </div>
 
@@ -173,18 +175,18 @@ export default function DashboardStats() {
                         <p className="text-xs font-semibold text-slate-500 uppercase">Top Location</p>
                         {stats.topLocation ? (
                             <>
-                                <p className="mt-2 text-lg font-bold text-slate-900 line-clamp-2">
+                                <p className="mt-2 text-lg font-bold text-black line-clamp-2">
                                     {stats.topLocation.label}
                                 </p>
-                                <p className="text-xs text-slate-600 mt-2 font-medium">
+                                <p className="text-xs text-gray-700 mt-2 font-medium">
                                     {stats.topLocation.count} rings
                                 </p>
                             </>
                         ) : (
-                            <p className="mt-2 text-sm text-slate-500">No data yet</p>
+                            <p className="mt-2 text-sm text-gray-600">No data yet</p>
                         )}
                     </div>
-                    <LocationOnIcon className="!text-3xl text-blue-600 flex-shrink-0" />
+                    <LocationOnIcon className="!text-3xl text-black flex-shrink-0" />
                 </div>
             </div>
         </div>

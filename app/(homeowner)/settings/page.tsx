@@ -17,7 +17,7 @@ export default async function SettingsPage() {
             {/* Header */}
             <div className="space-y-2 animate-slide-in">
                 <div className="flex items-center gap-3">
-                    <SettingsIcon className="!text-3xl text-blue-600" />
+                    <SettingsIcon className="!text-3xl text-black" />
                     <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">
                         Settings
                     </h1>

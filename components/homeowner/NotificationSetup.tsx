@@ -37,10 +37,10 @@ export default function NotificationSetup() {
     // Show setup instructions if Safari and notifications not supported
     if (isSafari && !notificationsSupported) {
         return (
-            <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3">
+            <div className="rounded-lg bg-gray-100 border border-gray-200 px-4 py-3">
                 <div className="flex items-start gap-3">
                     <svg
-                        className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5"
+                        className="h-5 w-5 text-gray-700 flex-shrink-0 mt-0.5"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                     >
@@ -51,8 +51,8 @@ export default function NotificationSetup() {
                         />
                     </svg>
                     <div className="text-sm">
-                        <p className="font-semibold text-blue-900">Safari Web Push Setup Required</p>
-                        <p className="text-blue-700 text-xs mt-2">
+                        <p className="font-semibold text-gray-900">Safari Web Push Setup Required</p>
+                        <p className="text-gray-700 text-xs mt-2">
                             Notifications require PWA mode (Home Screen).
                         </p>
                     </div>
@@ -88,18 +88,18 @@ export default function NotificationSetup() {
     }
 
     return (
-        <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3">
+        <div className="rounded-lg bg-gray-100 border border-gray-200 px-4 py-3">
             <div className="flex items-start justify-between gap-3">
                 <div className="text-sm">
-                    <p className="font-semibold text-blue-900">Notifications disabled</p>
-                    <p className="text-blue-700 text-xs mt-1">
+                    <p className="font-semibold text-gray-900">Notifications disabled</p>
+                    <p className="text-gray-700 text-xs mt-1">
                         Enable notifications to get instant doorbell alerts on your phone.
                     </p>
                 </div>
                 <button
                     onClick={requestNotificationPermission}
                     disabled={loading}
-                    className="flex-shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50 whitespace-nowrap"
+                    className="flex-shrink-0 rounded-lg bg-black px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-gray-900 disabled:opacity-50 whitespace-nowrap"
                 >
                     {loading ? "Enabling..." : "Enable"}
                 </button>

@@ -209,7 +209,7 @@ export default function QrCodesList({ initialQrCodes, onNewQrCode }: Props) {
                 <button
                   onClick={() => handleDownloadQR(qr.id, qr.label)}
                   disabled={!qrImages[qr.id]}
-                  className="flex-1 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-600 transition hover:bg-blue-100 disabled:opacity-50"
+                  className="flex-1 rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-black transition hover:bg-gray-200 disabled:opacity-50"
                   title="Download QR code as PNG"
                 >
                   ⬇ Download

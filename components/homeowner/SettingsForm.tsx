@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -140,7 +139,7 @@ export default function SettingsForm({ userId }: { userId: string }) {
             {/* Ringtone Selection */}
             <div className="rounded-lg border border-slate-200 bg-white p-6">
                 <div className="flex items-center gap-3 mb-4">
-                    <MusicNoteIcon className="!text-2xl text-blue-600" />
+                    <MusicNoteIcon className="!text-2xl text-black" />
                     <h2 className="text-xl font-bold text-slate-900">Notification Ringtone</h2>
                 </div>
 
@@ -155,7 +154,7 @@ export default function SettingsForm({ userId }: { userId: string }) {
                                     key={ringtone.id}
                                     onClick={() => setSettings({ ...settings, ringtoneId: ringtone.id })}
                                     className={`p-4 rounded-lg border-2 transition-all text-left ${settings.ringtoneId === ringtone.id
-                                        ? 'border-blue-600 bg-blue-50'
+                                        ? 'border-black bg-gray-100'
                                         : 'border-slate-200 bg-white hover:border-slate-300'
                                         }`}
                                 >
@@ -165,33 +164,10 @@ export default function SettingsForm({ userId }: { userId: string }) {
                         </div>
                     </div>
 
-                    {/* Volume Control */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-3">
-                            Volume: {settings.volume}%
-                        </label>
-                        <div className="flex items-center gap-4">
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={settings.volume}
-                                onChange={(e) =>
-                                    setSettings({
-                                        ...settings,
-                                        volume: parseInt(e.target.value),
-                                    })
-                                }
-                                className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                            />
-                            <VolumeUpIcon className="text-slate-600" />
-                        </div>
-                    </div>
-
                     {/* Test Button */}
                     <button
                         onClick={handlePlayRingtone}
-                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-200 transition-all"
+                        className="mt-4 inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-black hover:bg-gray-200 transition-all"
                     >
                         <PlayArrowIcon className="!text-lg" />
                         Test Ringtone
@@ -210,15 +186,15 @@ export default function SettingsForm({ userId }: { userId: string }) {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 transition-all"
+                    className="rounded-lg bg-black px-6 py-3 font-semibold text-white hover:bg-gray-900 active:bg-black disabled:opacity-50 transition-all"
                 >
                     {saving ? 'Saving...' : 'Save Settings'}
                 </button>
             </div>
 
             {/* Info */}
-            <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
-                <p className="text-sm text-blue-800">
+            <div className="rounded-lg bg-gray-100 border border-gray-200 p-4">
+                <p className="text-sm text-gray-800">
                     <strong>Note:</strong> Custom ringtone uploads and custom sounds will be added in a future update. For now, you can choose from our preset ringtones.
                 </p>
             </div>

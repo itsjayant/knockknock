@@ -24,14 +24,14 @@ export default async function LoginPage({
                 <span className="text-4xl" role="img" aria-label="Doorbell">
                     🔔
                 </span>
-                <h1 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900">
+                <h1 className="mt-3 text-2xl font-bold tracking-tight text-black">
                     KnockKnock
                 </h1>
-                <p className="mt-1.5 text-sm text-zinc-500">
+                <p className="mt-1.5 text-sm text-gray-600">
                     Sign in to manage your doorbell
                 </p>
             </div>
-            <div className="rounded-2xl border border-zinc-100 bg-white p-8 shadow-sm">
+            <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
                 <LoginForm redirectTo={redirectTo} />
             </div>
         </div>

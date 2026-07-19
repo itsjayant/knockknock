@@ -37,13 +37,13 @@ export default function HomeownerNav() {
     return (
         <>
             {/* Desktop Navigation */}
-            <nav className="hidden sm:block sticky top-0 z-40 border-b border-slate-200 bg-white shadow-sm">
-                <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+            <nav className="hidden sm:block sticky top-0 z-40 border-b border-gray-200 bg-white shadow-sm">
+                <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
                     <div className="flex items-center gap-3">
-                        <NotificationsIcon className="!text-2xl text-blue-600" />
-                        <h1 className="text-lg font-bold text-slate-900">KnockKnock</h1>
+                        <NotificationsIcon className="!text-2xl text-black" />
+                        <h1 className="text-lg font-bold text-black">KnockKnock</h1>
                     </div>
-                    <div className="flex gap-1 bg-slate-100 rounded-lg p-1">
+                    <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
                         {links.map((link) => {
                             const Icon = link.icon;
                             return (
@@ -77,7 +77,7 @@ export default function HomeownerNav() {
             <nav className="sm:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 shadow-sm">
                 <div className="px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <NotificationsIcon className="!text-xl text-blue-600" />
+                        <NotificationsIcon className="!text-xl text-black" />
                         <h1 className="text-sm font-bold text-slate-900">KnockKnock</h1>
                     </div>
                     <button
@@ -99,7 +99,7 @@ export default function HomeownerNav() {
                                 key={link.href}
                                 href={link.href}
                                 className={`flex flex-col items-center gap-1 flex-1 py-3 transition-all ${pathname === link.href
-                                    ? "bg-slate-50 text-blue-600 border-t-2 border-blue-600"
+                                    ? "bg-gray-100 text-black border-t-2 border-black"
                                     : "text-slate-500 hover:text-slate-700"
                                     }`}
                             >
